@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.IO;
 using System.Threading.Tasks;
@@ -8,6 +9,10 @@ namespace TTRider.Test
 {
     public class TestDatabaseContext : IDisposable
     {
+        private readonly List<SqlConnection> connections = new List<SqlConnection>();
+        private readonly string databaseName;
+
+
         public static TestDatabaseContext Create(Action<SqlConnection> initialier = null)
         {
             return new TestDatabaseContext("(LocalDB)\\v11.0", "TestDatabaseContext", null, initialier);
@@ -23,19 +28,18 @@ namespace TTRider.Test
             return new TestDatabaseContext(server, key, path, initialier);
         }
 
-        private readonly string name;
+        public string Name { get; }
 
-        private readonly string cs;
-        private readonly List<SqlConnection> connections = new List<SqlConnection>();
-
+        public string ConnectionString { get; }
 
 
         TestDatabaseContext(string datasource, string id, string path=".\\", Action<SqlConnection> initialier = null)
         {
-            name = $"DB{id}_{Guid.NewGuid().ToString("N")}";
+            this.Name = id;
+            databaseName = $"DB{id}_{Guid.NewGuid().ToString("N")}";
 
-            var dataFile = Path.GetFullPath($"{path}{name}_data.mdf");
-            var logFile = Path.GetFullPath($"{path}{name}_log.ldf");
+            var dataFile = Path.GetFullPath($"{path}{databaseName}_data.mdf");
+            var logFile = Path.GetFullPath($"{path}{databaseName}_log.ldf");
 
             var connection = new SqlConnection($"server={datasource}");
             using (connection)
@@ -53,12 +57,13 @@ namespace TTRider.Test
                             NAME={0}_log,
                             FILENAME = '{2}'
                         )",
-                    name, dataFile, logFile);
+                    databaseName, dataFile, logFile);
 
                 var command = new SqlCommand(sql, connection);
                 command.ExecuteNonQuery();
-                this.cs = $"Data Source={datasource};Integrated Security=True;Connect Timeout=30;Initial Catalog={name};";
                 connection.Close();
+
+                this.ConnectionString = $"Data Source={datasource};Integrated Security=True;Connect Timeout=30;Initial Catalog={databaseName};";
             }
 
             if (initialier != null)
@@ -79,7 +84,7 @@ namespace TTRider.Test
             connection.ChangeDatabase("master");
 
 
-            string sql = $"DROP DATABASE [{this.name}];";
+            string sql = $"DROP DATABASE [{this.databaseName}];";
             var command = new SqlCommand(sql, connection);
             command.ExecuteNonQuery();
             connection.Dispose();
@@ -88,7 +93,7 @@ namespace TTRider.Test
 
         public SqlConnection CreateConnection()
         {
-            var c = new SqlConnection(this.cs);
+            var c = new SqlConnection(this.ConnectionString);
             this.connections.Add(c);
             return c;
         }
