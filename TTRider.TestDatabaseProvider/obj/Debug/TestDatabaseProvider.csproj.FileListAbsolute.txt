@@ -1,0 +1,1 @@
+C:\src\TestDatabaseProvider\TestDatabaseProvider\obj\Debug\TestDatabaseProvider.csprojResolveAssemblyReference.cache

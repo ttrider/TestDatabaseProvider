@@ -51,3 +51,6 @@ Temporary Items
 /TestDatabaseProvider/obj/Debug
 /TestDatabaseProvider/obj/Release
 /TestDatabaseProvider/bin/Release/nugetpack
+/TTRider.TestDatabaseProvider/obj/Release
+/Tests/bin/Release/netcoreapp1.0
+/Tests/obj/Release/netcoreapp1.0
