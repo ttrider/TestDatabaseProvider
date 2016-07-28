@@ -1,17 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDatabaseProvider", "TestDatabaseProvider\TestDatabaseProvider.csproj", "{1CCF4F9E-71C6-4C48-8B84-B9D66E1AB6F0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Tests", "Tests\Tests.xproj", "{98A2D6D9-C228-45EC-BFE9-B5EA773496F2}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0098A690-74EA-4A6B-9468-A52D7D5FE93D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{657F07C2-3675-4FEF-B107-F354FF4A6101}"
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		global.json = global.json
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TTRider.TestDatabaseProvider", "TTRider.TestDatabaseProvider\TTRider.TestDatabaseProvider.xproj", "{A5F87CD1-F2B1-4FE5-829B-E38ED29E0186}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +22,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1CCF4F9E-71C6-4C48-8B84-B9D66E1AB6F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1CCF4F9E-71C6-4C48-8B84-B9D66E1AB6F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1CCF4F9E-71C6-4C48-8B84-B9D66E1AB6F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1CCF4F9E-71C6-4C48-8B84-B9D66E1AB6F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98A2D6D9-C228-45EC-BFE9-B5EA773496F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98A2D6D9-C228-45EC-BFE9-B5EA773496F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98A2D6D9-C228-45EC-BFE9-B5EA773496F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98A2D6D9-C228-45EC-BFE9-B5EA773496F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5F87CD1-F2B1-4FE5-829B-E38ED29E0186}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5F87CD1-F2B1-4FE5-829B-E38ED29E0186}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5F87CD1-F2B1-4FE5-829B-E38ED29E0186}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5F87CD1-F2B1-4FE5-829B-E38ED29E0186}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
