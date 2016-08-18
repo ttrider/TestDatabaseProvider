@@ -36,8 +36,9 @@ namespace TTRider.Test
         public string DatabaseName { get; private set; }
 
         private string dataSource;
+        private string shortConnectString;
         private string stateFile;
-        
+
 
         TestDatabaseContext(string datasource, string id, string path = ".\\", Action<SqlConnection> initialier = null)
         {
@@ -48,7 +49,8 @@ namespace TTRider.Test
             var dataFile = Path.GetFullPath($"{path}{DatabaseName}_data.mdf");
             var logFile = Path.GetFullPath($"{path}{DatabaseName}_log.ldf");
 
-            var connection = new SqlConnection($"server={datasource}");
+            this.shortConnectString = $"server={datasource}";
+            var connection = new SqlConnection(shortConnectString);
             using (connection)
             {
                 connection.Open();
@@ -77,15 +79,13 @@ namespace TTRider.Test
                     connection.Dispose();
                 }
 
-
-
                 foreach (var tdc in new DirectoryInfo(Path.GetTempPath()).EnumerateFiles("*.TestDatabaseContext"))
                 {
-                    //DeleteDatabase(tdc.FullName);
+                     DeleteDatabase(tdc.FullName);
                 }
 
                 this.stateFile = Path.Combine(Path.GetTempPath(), $"TSC{Guid.NewGuid().ToString("N")}.TestDatabaseContext");
-                File.WriteAllLines(stateFile,new [] {this.DatabaseName, stateFile});
+                File.WriteAllLines(stateFile, new[] { this.DatabaseName, stateFile });
 
                 this.ConnectionString = $"Data Source={datasource};Integrated Security=True;Connect Timeout=30;Initial Catalog={DatabaseName};";
             }
@@ -111,14 +111,11 @@ namespace TTRider.Test
                     }
                     SqlConnection.ClearAllPools();
 
-                    var csb = new SqlConnectionStringBuilder(this.ConnectionString) {InitialCatalog = "master"};
-
-                    var connection = new SqlConnection(csb.ConnectionString);
+                    var connection = new SqlConnection(this.shortConnectString);
                     connection.Open();
                     connection.ChangeDatabase("master");
 
-
-                    string sql = $"DROP DATABASE [{state[0]}];";
+                    string sql = $"IF EXISTS(SELECT name FROM sys.databases WHERE name = '{state[0]}') DROP DATABASE [{state[0]}];";
                     var command = new SqlCommand(sql, connection);
                     command.ExecuteNonQuery();
                     connection.Dispose();
@@ -127,6 +124,7 @@ namespace TTRider.Test
                     File.Delete(tdc);
                 }
             }
+            catch { }
             finally { }
         }
 
