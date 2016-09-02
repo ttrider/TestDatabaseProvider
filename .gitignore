@@ -47,10 +47,7 @@ Temporary Items
 *.nupkg
 *.user
 
-/TestDatabaseProvider/bin/Debug
-/TestDatabaseProvider/obj/Debug
-/TestDatabaseProvider/obj/Release
-/TestDatabaseProvider/bin/Release/nugetpack
-/TTRider.TestDatabaseProvider/obj/Release
-/Tests/bin/Release/netcoreapp1.0
-/Tests/obj/Release/netcoreapp1.0
+/TTRider.TestDatabaseProvider/bin
+/TTRider.TestDatabaseProvider/obj
+/Tests/bin
+/Tests/obj

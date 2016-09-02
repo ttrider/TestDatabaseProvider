@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-//using System.ComponentModel.Design;
-//using System.Configuration;
-//using System.Data.SqlClient;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -12,7 +9,8 @@ namespace TTRider.Test
     public class TestDatabaseContext : IDisposable
     {
         private readonly List<SqlConnection> connections = new List<SqlConnection>();
-       
+        private readonly string shortConnectString;
+        private readonly string stateFile;
 
         public static TestDatabaseContext Create(Action<SqlConnection> initialier = null)
         {
@@ -33,22 +31,19 @@ namespace TTRider.Test
 
         public string ConnectionString { get; }
 
-        public string DatabaseName { get; private set; }
+        public string DatabaseName { get; }
 
-        private string dataSource;
-        private string stateFile;
-        
 
         TestDatabaseContext(string datasource, string id, string path = ".\\", Action<SqlConnection> initialier = null)
         {
             this.Name = id;
 
-            this.DatabaseName = $"DB{id}_{Guid.NewGuid().ToString("N")}";
-            this.dataSource = datasource;
+            this.DatabaseName = $"DB{id}_{Guid.NewGuid():N}";
             var dataFile = Path.GetFullPath($"{path}{DatabaseName}_data.mdf");
             var logFile = Path.GetFullPath($"{path}{DatabaseName}_log.ldf");
 
-            var connection = new SqlConnection($"server={datasource}");
+            this.shortConnectString = $"server={datasource}";
+            var connection = new SqlConnection(shortConnectString);
             using (connection)
             {
                 connection.Open();
@@ -77,15 +72,13 @@ namespace TTRider.Test
                     connection.Dispose();
                 }
 
-
-
                 foreach (var tdc in new DirectoryInfo(Path.GetTempPath()).EnumerateFiles("*.TestDatabaseContext"))
                 {
                     DeleteDatabase(tdc.FullName);
                 }
 
-                this.stateFile = Path.Combine(Path.GetTempPath(), $"TSC{Guid.NewGuid().ToString("N")}.TestDatabaseContext");
-                File.WriteAllLines(stateFile,new [] {this.DatabaseName, stateFile});
+                this.stateFile = Path.Combine(Path.GetTempPath(), $"TSC{Guid.NewGuid():N}.TestDatabaseContext");
+                File.WriteAllLines(stateFile, new[] { this.DatabaseName, stateFile });
 
                 this.ConnectionString = $"Data Source={datasource};Integrated Security=True;Connect Timeout=30;Initial Catalog={DatabaseName};";
             }
@@ -111,14 +104,11 @@ namespace TTRider.Test
                     }
                     SqlConnection.ClearAllPools();
 
-                    var csb = new SqlConnectionStringBuilder(this.ConnectionString) {InitialCatalog = "master"};
-
-                    var connection = new SqlConnection(csb.ConnectionString);
+                    var connection = new SqlConnection(this.shortConnectString);
                     connection.Open();
                     connection.ChangeDatabase("master");
 
-
-                    string sql = $"DROP DATABASE [{state[0]}];";
+                    string sql = $"IF EXISTS(SELECT name FROM sys.databases WHERE name = '{state[0]}') DROP DATABASE [{state[0]}];";
                     var command = new SqlCommand(sql, connection);
                     command.ExecuteNonQuery();
                     connection.Dispose();
@@ -127,7 +117,10 @@ namespace TTRider.Test
                     File.Delete(tdc);
                 }
             }
-            finally { }
+            catch
+            {
+                // ignored
+            }
         }
 
 
