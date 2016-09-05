@@ -13,6 +13,7 @@
   "description": "helper class that allows to create and delete sql server databases dynamically in a context of the test",
   "copyright": "Copyright (C) 2014-2016 TTRider, L.L.C.",
   "dependencies": {
+    "Microsoft.Extensions.Logging": "1.0.0",
     "NETStandard.Library": "1.6.0",
     "System.Data.SqlClient": "4.1.0"
   },

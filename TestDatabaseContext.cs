@@ -6,22 +6,28 @@ using System.Data.SqlClient;
 //using System.Data.SqlClient;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace TTRider.Test
 {
     public class TestDatabaseContext : IDisposable
     {
         private readonly List<SqlConnection> connections = new List<SqlConnection>();
-       
+        private const string DefaultConnectionString = "Data Source=(LocalDB)\\v11.0; Integrated Security=true;";
+        private readonly string baseConnectionString;
+        private readonly string stateFile;
+        private readonly ILogger<TestDatabaseContext> logger;
+
+        
 
         public static TestDatabaseContext Create(Action<SqlConnection> initialier = null)
         {
-            return new TestDatabaseContext("(LocalDB)\\v11.0", "TestDatabaseContext", null, initialier);
+            return new TestDatabaseContext(DefaultConnectionString, null, ".\\", initialier);
         }
 
         public static TestDatabaseContext Create(string key, Action<SqlConnection> initialier = null)
         {
-            return new TestDatabaseContext("(LocalDB)\\v11.0", key, ".\\", initialier);
+            return new TestDatabaseContext(DefaultConnectionString, key, ".\\", initialier);
         }
 
         public static TestDatabaseContext Create(string server, string key, string path = null, Action<SqlConnection> initialier = null)
@@ -33,26 +39,29 @@ namespace TTRider.Test
 
         public string ConnectionString { get; }
 
-        public string DatabaseName { get; private set; }
-
-        private string dataSource;
-        private string shortConnectString;
-        private string stateFile;
+        public string DatabaseName { get; }
 
 
-        TestDatabaseContext(string datasource, string id, string path = ".\\", Action<SqlConnection> initialier = null)
+
+        TestDatabaseContext(string connectionString, string id, string path = ".\\", Action<SqlConnection> initialier = null)
         {
+            this.logger = new LoggerFactory().CreateLogger<TestDatabaseContext>();
+
+            this.baseConnectionString = connectionString;
             this.Name = id;
 
-            this.DatabaseName = $"DB{id}_{Guid.NewGuid().ToString("N")}";
-            this.dataSource = datasource;
+            this.DatabaseName = $"DB{id}_{Guid.NewGuid():N}";
+            logger.LogDebug($"TDC database: {DatabaseName}");
             var dataFile = Path.GetFullPath($"{path}{DatabaseName}_data.mdf");
+            logger.LogDebug($"TDC mdf file: {dataFile}");
             var logFile = Path.GetFullPath($"{path}{DatabaseName}_log.ldf");
+            logger.LogDebug($"TDC ldf file: {dataFile}");
 
-            this.shortConnectString = $"server={datasource}";
-            var connection = new SqlConnection(shortConnectString);
+            logger.LogDebug($"TDC master connection string: {connectionString}");
+            var connection = new SqlConnection(connectionString);
             using (connection)
             {
+                logger.LogDebug($"TDC opening connection: {connectionString}");
                 connection.Open();
 
                 try
@@ -70,6 +79,7 @@ namespace TTRider.Test
                         )",
                     DatabaseName, dataFile, logFile);
 
+                    logger.LogDebug($"TDC creating test database {DatabaseName}");
                     var command = new SqlCommand(sql, connection);
                     command.ExecuteNonQuery();
                 }
@@ -84,15 +94,23 @@ namespace TTRider.Test
                      DeleteDatabase(tdc.FullName);
                 }
 
-                this.stateFile = Path.Combine(Path.GetTempPath(), $"TSC{Guid.NewGuid().ToString("N")}.TestDatabaseContext");
+                this.stateFile = Path.Combine(Path.GetTempPath(), $"TSC{Guid.NewGuid():N}.TestDatabaseContext");
                 File.WriteAllLines(stateFile, new[] { this.DatabaseName, stateFile });
 
-                this.ConnectionString = $"Data Source={datasource};Integrated Security=True;Connect Timeout=30;Initial Catalog={DatabaseName};";
+                var csb = new SqlConnectionStringBuilder(this.baseConnectionString)
+                {
+                    InitialCatalog = DatabaseName
+                };
+
+                logger.LogDebug($"TDC connection string: {csb.ConnectionString}");
+                this.ConnectionString = csb.ConnectionString;
             }
 
             if (initialier != null)
             {
+                logger.LogDebug($"TDC initializing");
                 this.Initialize(initialier);
+                logger.LogDebug($"TDC initialized");
             }
         }
 
@@ -105,13 +123,15 @@ namespace TTRider.Test
                 {
                     var state = File.ReadAllLines(tdc);
 
+                    logger.LogDebug($"TDC closing connections");
                     foreach (var sqlConnection in this.connections)
                     {
                         sqlConnection.Dispose();
                     }
                     SqlConnection.ClearAllPools();
 
-                    var connection = new SqlConnection(this.shortConnectString);
+                    logger.LogDebug($"TDC deleting database {state[0]}");
+                    var connection = new SqlConnection(this.baseConnectionString);
                     connection.Open();
                     connection.ChangeDatabase("master");
 
@@ -124,8 +144,10 @@ namespace TTRider.Test
                     File.Delete(tdc);
                 }
             }
-            catch { }
-            finally { }
+            catch
+            {
+                // ignored
+            }
         }
 
 
