@@ -13,7 +13,7 @@ namespace TTRider.Test
     public class TestDatabaseContext : IDisposable
     {
         private readonly List<SqlConnection> connections = new List<SqlConnection>();
-        private const string DefaultConnectionString = "Data Source=(LocalDB)\\v11.0; Integrated Security=true;";
+        public const string DefaultConnectionString = "Data Source=(LocalDB)\\v11.0; Integrated Security=true;";
         private readonly string baseConnectionString;
         private readonly string stateFile;
         private readonly ILogger<TestDatabaseContext> logger;
