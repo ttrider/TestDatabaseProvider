@@ -137,6 +137,7 @@ namespace TTRider.Test
 
                     string sql = $"IF EXISTS(SELECT name FROM sys.databases WHERE name = '{state[0]}') DROP DATABASE [{state[0]}];";
                     var command = new SqlCommand(sql, connection);
+                    command.CommandTimeout = 1000;
                     command.ExecuteNonQuery();
                     connection.Dispose();
                     SqlConnection.ClearAllPools();
@@ -153,12 +154,12 @@ namespace TTRider.Test
 
         public void Dispose()
         {
-            DeleteDatabase(this.stateFile);
+            //DeleteDatabase(this.stateFile);
         }
 
         ~TestDatabaseContext()
         {
-            DeleteDatabase(this.stateFile);
+            //DeleteDatabase(this.stateFile);
         }
 
         public SqlConnection CreateConnection()
