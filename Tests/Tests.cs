@@ -10,7 +10,7 @@ namespace Tests
         [Fact]
         public void TestSuccess()
         {
-            using (var context = TestDatabaseContext.Create("test", cnn =>
+            using (var context = TestDatabaseContext<SqlConnection>.Create("test", cnn =>
             {
                 var command = new SqlCommand("SELECT * FROM sys.objects", cnn);
                 command.ExecuteNonQuery();
@@ -18,7 +18,8 @@ namespace Tests
             {
                 context.Initialize(cnn =>
                 {
-                    var command = new SqlCommand("SELECT * FROM sys.tables", cnn);
+                    var command = cnn.CreateCommand();
+                    command.CommandText = "SELECT * FROM sys.tables";
                     command.ExecuteNonQuery();
 
                 });
